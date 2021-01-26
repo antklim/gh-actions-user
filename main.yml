@@ -1,0 +1,97 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: >
+  This template creates IAM resources to allow GitHub actions upload build assets to AWS bucket
+
+Parameters:
+  AssetsBucket:
+    Description: A bucket where GitHub actions uploads build assets
+    Type: String
+
+  ExternalId:
+    Description: External ID to verify assume role requestor
+    Type: String
+
+  ProjectName:
+    Description: Project or repository name used to identify created AWS resources
+    Type: String
+
+Resources:
+  AssetsPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: !Sub Assets upload policy used by ${ProjectName} project
+      ManagedPolicyName: !Sub ${ProjectName}-assets-policy
+      PolicyDocument: 
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:ListBucket
+              - s3:PutObject
+              - s3:PutObjectTagging
+            Resource:
+              - !Sub arn:aws:s3:::${AssetsBucket}
+              - !Sub arn:aws:s3:::${AssetsBucket}/*
+
+  AssetsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: !Sub Assets upload role for ${ProjectName} project
+      RoleName: !Sub ${ProjectName}-assets-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          -
+            Effect: Allow
+            Action:
+              - sts:AssumeRole
+              - sts:TagSession
+            Principal:
+              AWS: !GetAtt AssetsUser.Arn
+            Condition:
+              StringEquals:
+                sts:ExternalId: !Ref ExternalId
+      ManagedPolicyArns:
+        - !Ref AssetsPolicy
+      Tags:
+        -
+          Key: project
+          Value: !Ref ProjectName
+      
+  AssetsUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Sub ${ProjectName}-assets-user
+      Tags:
+        -
+          Key: project
+          Value: !Ref ProjectName
+
+  AssetsUserAssumeRolePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub ${ProjectName}-assume-role-policy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          -
+            Effect: Allow
+            Action:
+              - sts:AssumeRole
+              - sts:TagSession
+            Resource: !GetAtt AssetsUser.Arn
+      Users:
+        - !Ref AssetsUser
+
+  AssetsUserCFNKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      Serial: 1
+      UserName: !Ref AssetsUser
+
+Outputs:
+  AssetsUserAccessKey:
+    Value: !Ref AssetsUserCFNKey
+  AssetsUserSecretKey:
+    Value: !GetAtt AssetsUserCFNKey.SecretAccessKey
