@@ -45,12 +45,16 @@ Resources:
           - Effect: Allow
             Action:
               - sts:AssumeRole
-              - sts:TagSession
             Principal:
               AWS: !GetAtt AssetsUser.Arn
             Condition:
               StringEquals:
                 sts:ExternalId: !Ref ExternalId
+          - Effect: Allow
+            Action:
+              - sts:TagSession
+            Principal:
+              AWS: !GetAtt AssetsUser.Arn
       ManagedPolicyArns:
         - !Ref AssetsPolicy
       Tags:
