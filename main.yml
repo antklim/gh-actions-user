@@ -42,8 +42,7 @@ Resources:
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
-          -
-            Effect: Allow
+          - Effect: Allow
             Action:
               - sts:AssumeRole
               - sts:TagSession
@@ -55,8 +54,7 @@ Resources:
       ManagedPolicyArns:
         - !Ref AssetsPolicy
       Tags:
-        -
-          Key: project
+        - Key: project
           Value: !Ref ProjectName
       
   AssetsUser:
@@ -64,8 +62,7 @@ Resources:
     Properties:
       UserName: !Sub ${ProjectName}-assets-user
       Tags:
-        -
-          Key: project
+        - Key: project
           Value: !Ref ProjectName
 
   AssetsUserAssumeRolePolicy:
@@ -75,8 +72,7 @@ Resources:
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
-          -
-            Effect: Allow
+          - Effect: Allow
             Action:
               - sts:AssumeRole
               - sts:TagSession
