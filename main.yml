@@ -20,7 +20,7 @@ Resources:
   AssetsPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
-      Description: !Sub Assets upload policy used by ${ProjectName} project
+      Description: !Sub Assets upload policy for ${ProjectName} project
       ManagedPolicyName: !Sub ${ProjectName}-assets-policy
       PolicyDocument: 
         Version: '2012-10-17'
