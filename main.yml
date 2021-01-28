@@ -60,6 +60,8 @@ Resources:
       Tags:
         - Key: project
           Value: !Ref ProjectName
+        - Key: stack
+          Value: !Ref AWS::StackName
       
   AssetsUser:
     Type: AWS::IAM::User
@@ -68,6 +70,8 @@ Resources:
       Tags:
         - Key: project
           Value: !Ref ProjectName
+        - Key: stack
+          Value: !Ref AWS::StackName
 
   AssetsUserAssumeRolePolicy:
     Type: AWS::IAM::Policy
