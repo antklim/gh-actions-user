@@ -22,6 +22,9 @@ Having the user decoupled from resource access permissions allows better resourc
 
 ## Stack creation and update
 
+## GitHub Actions flow
+![GitHub Actions flow](/docs/gh-actions-flow.png?raw=true "GitHub Actions flow")
+
 ## GitHub settings
 
 ## Testing permissions
