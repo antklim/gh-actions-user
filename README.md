@@ -31,7 +31,7 @@ Following is an example of CLI command to create the stack:
 ```
 aws cloudformation create-stack --stack-name gh-actions-user \
   --template-body file://main.yml \
-  --parameters ParameterKey=AssetsBucket,ParameterValue=AssetsBucket \
+  --parameters ParameterKey=AssetsBucket,ParameterValue=assets-bucket \
   ParameterKey=ExternalId,ParameterValue=ExternalID \
   ParameterKey=ProjectName,ParameterValue=MyProject \
   --tags Key=project,Value=MyProject \
@@ -41,10 +41,54 @@ aws cloudformation create-stack --stack-name gh-actions-user \
   --profile my-profile
 ```
 
+When stack successfully created, it outputs access key and secret access keys. These credentials used to authenticate in AWS.
+
 ## Testing permissions
+Run the following commands to verify that created user and role have required permissions.
+
+1. Add credentials to `~/.aws/credentials` file (AWS CLI configuration [documentaiton](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html)).
+```
+[gh-actions-user]
+aws_access_key_id=ABC123
+aws_secret_access_key=abc123
+```
+
+2. Use `gh-actions-user` to assume role.
+```
+aws sts assume-role \
+  --role-arn arn:aws:iam::{Your AWS Account}:role/role-name \
+  --role-session-name TestSession \
+  --external-id ExternalID \
+  --profile gh-actions-user
+```
+
+_Note:_
+* To get role ARN, go to CloudFormation stack resources and open the role page. Role ARN provided on the role page.
+* Make sure that the value of `--external-id` flag matches the value of the `ExternalId` parameter of the stack.
+
+The command should return the following response.
+```
+{
+  "Credentials": {
+      "AccessKeyId": "ABC123",
+      "SecretAccessKey": "abc123",
+      "SessionToken": "XYZ==",
+      "Expiration": "2021-01-01T23:23:23+00:00"
+  },
+  "AssumedRoleUser": {
+      "AssumedRoleId": "ABC:TestSession",
+      "Arn": "arn:aws:sts::{Your AWS Account}:assumed-role/role-name/TestSession"
+  }
+}
+```
+
+3. Use `AccessKeyId`, `SecretAccessKey`, and `SessionToken` to test permissions to AWS Resources.
+```
+AWS_ACCESS_KEY_ID=ABC123 AWS_SECRET_ACCESS_KEY=abc123 AWS_SESSION_TOKEN=XYZ== aws s3 ls s3://assets-bucket
+```
 
 ## GitHub settings
-When stack successfully created, it outputs access key and secret access keys. GitHub Actions process uses these credentials to authenticate in AWS. Also, GitHub provides [secrets](https://docs.github.com/en/actions/reference/encrypted-secrets) to store sensitive information. Secrets are encrypted environment variables that are available to use in GitHub Actions workflows. 
+GitHub Actions process needs IAM User credentials to authenticate in AWS. To store sensitive information, GitHub provides [secrets](https://docs.github.com/en/actions/reference/encrypted-secrets). Secrets are encrypted environment variables that are available to use in GitHub Actions workflows.
 
 To manage secrets, go to repository settings and choose secrets option:
 ![GitHub Secrets settings](/docs/gh-secrets-settings.png?raw=true "GitHub Secrets settings")
