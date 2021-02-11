@@ -13,18 +13,76 @@ It's not rare when CI/CD service should have access to AWS resources - upload as
 The CloudFormation stack produces the following resources:
 * IAM Managed Policy - grants access to AWS Resources
 * IAM Role - includes managed policy to obtain resource permissions
-  * Trust policy - restricts principals that permitted to assume the role
+  * Trust policy - restricts principals that permitted to assume the role*
 * IAM User - a container to attach access keys and assume the role
 * IAM Policy - an inline policy that permits users to assume the role
 * IAM AccessKey - creates access keys required for CLI access
 
+_Note*:_ Trust policy includes ExternalID. It is an additional safety measure. When a user assumes the role, it should provide a unique ExternalID assigned to the user. ExternalID is a way to differentiate role users.
+
 Having the user decoupled from resource access permissions allows better resource access management. In the case of malicious user behaviour, it will be easy to terminate a session and issue new access keys. All done without interruption of the other users that can use the same role. 
 
 ## Stack creation and update
+There are two ways to create and update stack:
+* AWS Console
+* AWS CLI
 
-## GitHub Actions flow
-![GitHub Actions flow](/docs/gh-actions-flow.png?raw=true "GitHub Actions flow")
-
-## GitHub settings
+Following is an example of CLI command to create the stack:
+```
+aws cloudformation create-stack --stack-name gh-actions-user \
+  --template-body file://main.yml \
+  --parameters ParameterKey=AssetsBucket,ParameterValue=AssetsBucket \
+  ParameterKey=ExternalId,ParameterValue=ExternalID \
+  ParameterKey=ProjectName,ParameterValue=MyProject \
+  --tags Key=project,Value=MyProject \
+  --region ap-southeast-2 \
+  --capabilities CAPABILITY_NAMED_IAM \
+  --output yaml \
+  --profile my-profile
+```
 
 ## Testing permissions
+
+## GitHub settings
+When stack successfully created, it outputs access key and secret access keys. GitHub Actions process uses these credentials to authenticate in AWS. Also, GitHub provides [secrets](https://docs.github.com/en/actions/reference/encrypted-secrets) to store sensitive information. Secrets are encrypted environment variables that are available to use in GitHub Actions workflows. 
+
+To manage secrets, go to repository settings and choose secrets option:
+![GitHub Secrets settings](/docs/gh-secrets-settings.png?raw=true "GitHub Secrets settings")
+
+Store `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_ROLE_TO_ASSUME`, and `AWS_ROLE_EXTERNAL_ID` in GitHub Secrets. Now these values are available to use in GitHib Actions workflow.
+```yml
+name: Upload assets to S3 bucket
+
+on:
+  push:
+    branches:
+    - master
+
+jobs:
+  upload:
+    name: Upload assets to S3 bucket
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-southeast-2
+        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        role-external-id: ${{ secrets.AWS_ROLE_EXTERNAL_ID }}
+        role-duration-seconds: 1200
+        role-session-name: AssetsUploadSession
+    - name: Copy files to S3 bucket
+      run: |
+        aws s3 sync . s3://my-s3-assets-bucket
+```
+
+The workflow above uses [aws-actions/configure-aws-credentials](https://github.com/aws-actions/configure-aws-credentials) action to get access to AWS resources.
+
+### GitHub Actions flow
+![GitHub Actions flow](/docs/gh-actions-flow.png?raw=true "GitHub Actions flow")
