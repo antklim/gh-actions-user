@@ -27,7 +27,7 @@ There are two ways to create and update stack:
 * AWS Console
 * AWS CLI
 
-Following is an example of CLI command to create the stack:
+Following is an example of CLI command to create the stack.
 ```
 aws cloudformation create-stack --stack-name gh-actions-user \
   --template-body file://main.yml \
