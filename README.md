@@ -31,7 +31,7 @@ Following is an example of CLI command to create the stack.
 ```
 aws cloudformation create-stack --stack-name gh-actions-user \
   --template-body file://main.yml \
-  --parameters ParameterKey=AssetsBucket,ParameterValue=assets-bucket \
+  --parameters ParameterKey=AssetsBucket,ParameterValue=my-s3-assets-bucket \
   ParameterKey=ExternalId,ParameterValue=ExternalID \
   ParameterKey=ProjectName,ParameterValue=MyProject \
   --tags Key=project,Value=MyProject \
@@ -84,7 +84,7 @@ The command should return the following response.
 
 3. Use `AccessKeyId`, `SecretAccessKey`, and `SessionToken` to test permissions to AWS Resources.
 ```
-AWS_ACCESS_KEY_ID=ABC123 AWS_SECRET_ACCESS_KEY=abc123 AWS_SESSION_TOKEN=XYZ== aws s3 ls s3://assets-bucket
+AWS_ACCESS_KEY_ID=ABC123 AWS_SECRET_ACCESS_KEY=abc123 AWS_SESSION_TOKEN=XYZ== aws s3 ls s3://my-s3-assets-bucket
 ```
 
 ## GitHub settings
@@ -93,7 +93,7 @@ GitHub Actions process needs IAM User credentials to authenticate in AWS. To sto
 To manage secrets, go to repository settings and choose secrets option:
 ![GitHub Secrets settings](/docs/gh-secrets-settings.png?raw=true "GitHub Secrets settings")
 
-Store `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_ROLE_TO_ASSUME`, and `AWS_ROLE_EXTERNAL_ID` in GitHub Secrets. Now these values are available to use in GitHib Actions workflow.
+Store `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_ROLE_TO_ASSUME`, and `AWS_ROLE_EXTERNAL_ID` in GitHub Secrets. Now, these values are available to use in GitHub Actions workflow.
 ```yml
 name: Upload assets to S3 bucket
 
