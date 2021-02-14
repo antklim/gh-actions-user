@@ -31,7 +31,7 @@ Following is an example of CLI command to create the stack.
 ```
 aws cloudformation create-stack --stack-name gh-actions-user \
   --template-body file://main.yml \
-  --parameters ParameterKey=AssetsBucket,ParameterValue=my-s3-assets-bucket \
+  --parameters ParameterKey=AssetsBucket,ParameterValue=my-assets-bucket \
   ParameterKey=ExternalId,ParameterValue=ExternalID \
   ParameterKey=ProjectName,ParameterValue=MyProject \
   --tags Key=project,Value=MyProject \
@@ -84,7 +84,7 @@ The command should return the following response.
 
 3. Use `AccessKeyId`, `SecretAccessKey`, and `SessionToken` to test permissions to AWS Resources.
 ```
-AWS_ACCESS_KEY_ID=ABC123 AWS_SECRET_ACCESS_KEY=abc123 AWS_SESSION_TOKEN=XYZ== aws s3 ls s3://my-s3-assets-bucket
+AWS_ACCESS_KEY_ID=ABC123 AWS_SECRET_ACCESS_KEY=abc123 AWS_SESSION_TOKEN=XYZ== aws s3 ls s3://my-assets-bucket
 ```
 
 ## GitHub settings
@@ -123,7 +123,7 @@ jobs:
         role-session-name: AssetsUploadSession
     - name: Copy files to S3 bucket
       run: |
-        aws s3 sync . s3://my-s3-assets-bucket
+        aws s3 sync . s3://my-assets-bucket
 ```
 
 The workflow above uses [aws-actions/configure-aws-credentials](https://github.com/aws-actions/configure-aws-credentials) action to get access to AWS resources.
